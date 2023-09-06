@@ -1,0 +1,214 @@
+paths:
+  /api/carts:
+    post:
+      summary: Ruta para crear un carrito
+      tags:
+        - Carts 
+      responses:
+        "200":
+          description: Se creo el carrito correctamente
+        "500":
+          description: Error en el servidor 
+/api/carts/{cid}:
+  get:
+    summary: Obtener un carrito por su id
+    tags:
+      - Carts
+    parameters:
+      - name: cid 
+        in: path 
+        required: true 
+        description: ID del carrito que desea buscar 
+        schema:
+          type: string  
+    responses:
+      "200":
+        description: Se obtuvo el carrito solicitado
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Cart"  
+      "500":
+        description: Error en el servidor
+  delete:
+    summary: Ruta para elimiar un carrito por su Id
+    tags:
+      - Carts
+    parameters:
+      - name: cid 
+        in: path 
+        required: true 
+        description: ID del carrito que desea buscar 
+        schema:
+          type: string  
+    responses:
+      "200":
+        description: Carrito eliminado 
+      "500":
+        description: Error en el servidor
+
+/api/carts/{cid}/product/{pid}:
+  post:
+    summary: Ruta para obtener un carrito por su ID e ingresar un producto con su Id
+    tags:
+      - Carts
+    security:
+        - userAuth: ['user']
+    parameters:
+      - name: cid 
+        in: path 
+        required: true 
+        description: id del carrito que desea actualizar 
+        schema:
+          $type: string
+      - name: pid 
+        in: path 
+        required: true 
+        description: id del producto que desea agregar al carrito
+        schema:
+          $type: string
+    responses:
+      "200":
+        description: Producto agregado al carrito
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Cart"  
+      "500":
+        description: Error en el servidor
+  delete:
+    summary: Ruta para buscar un carrito y eliminar un producto con su Id
+    tags:
+      - Carts
+    parameters:
+      - name: cid 
+        in: path 
+        required: true 
+        description: id del carrito que desea actualizar 
+        schema:
+          $type: string
+      - name: pid 
+        in: path 
+        required: true 
+        description: id del producto que desea eliminar del carrito
+        schema:
+          $type: string
+    responses:
+      "200":
+        description: Carrito eliminado
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Cart"  
+      "500":
+        description: Error en el servidor
+
+/api/carts/{cid}/purchase:
+  post:
+    summary: Ruta para buscar un carrito y generar ticket de compra
+    tags:
+      - Carts
+    parameters:
+      - name: cid 
+        in: path 
+        required: true 
+        description: id del carrito que desea comprar
+        schema:
+          $type: string
+    responses:
+      "200":
+        description: Ticket generado con exito
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketCart"  
+      "500":
+        description: Error en el servidor
+
+components:
+  schemas:
+    Cart:  
+      type: object
+      properties:
+        _id:
+          type: ObjectId
+          description: ID generado por la base de datos
+        productId:   
+          type: array
+          items:
+            $ref: "#/components/schemas/CartProduct"  
+        quantity:
+          type: number
+          description: Cantidad de productos
+
+    CartProduct:  
+      type: object
+      properties:
+        _id:   
+          type: ObjectId 
+          description: ID del producto
+        title:
+          type: string
+          description: Nombre del producto 
+        description:
+          type: string
+          description: Descripción del producto
+        price:
+          type: number 
+          description: precio del producto
+        code:
+          type: string
+          description: codigo del producto 
+        status:
+          type: boolean
+          default: true
+        thumbnail:
+          type: string
+          description: imagen del producto
+        stock:
+          type: number
+          description: cantidad de producto
+        category:
+          type: string
+          description: Pulsera - Aros - Anillo
+        owner:
+          type: string
+          description: Id del usuario que creo el producto
+      example:
+        _id: "klasjfaknnsf,5464s"
+        title: "Pulsera luna"
+        description: "pulsera de plata 925"
+        price: 5000
+        code: "Pulsera-05"
+        status: true
+        thumbnail: "www.images/pulsera-luna"
+        stock: 5
+        category: "Pulsera"
+        owner: "as4f5dswetrgssd3245"
+    
+    TicketCart:
+      type: object
+      properties:
+        _id:
+          type: ObjectId
+          description: ID generado por la base de datos
+        code:
+          type: string
+          description: Id generado de forma automatica
+        purchase_datetime:
+          type: date 
+          description: fecha y hora de la generación del ticket
+        amount:
+          type: number 
+          description: Monto total de la compra
+      example:
+        code: "Pabdjakg4sd1g25sa"
+        purchase_datetime: "2023-08-14 T17:51:12.000Z"
+        amount: 5000
+        _id: "klasjfaknnsf,5464s"
+    
+
+securitySchemes:
+  userAuth:
+    type: http
+    scheme: bearer

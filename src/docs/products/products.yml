@@ -1,0 +1,202 @@
+paths:
+  /api/products:
+    get:
+      summary: Ruta para obtener todos los productos
+      tags:
+        - Products
+      security:
+        - userAuth: [] #el usuario debe estar logueado para cargar la lista de productos
+      responses:
+        "200":
+          description: Se obtuvo el listado de productos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#components/schemas/Products"
+        "500":
+          description: Error en el servidor
+    post:  
+      summary: Ruta para crear un producto
+      tags:
+        - Products
+      security:
+        - userAuth: ['admin', 'premium']
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#components/requestBodies/NewProduct"
+      responses:
+        "200":
+          description: Se creo el producto correctamente
+        "500":
+          description: Error en el servidor 
+
+/api/products/{pid}:
+  get:
+    summary: Obtener un producto por su id
+    tags:
+      - Products
+    parameters:
+      - name: pid 
+        in: path 
+        required: true 
+        description: id del producto que desea buscar 
+        schema:
+          $type: string
+    responses:
+        "200":
+          description: Se obtuvo el producto solicitado
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#components/schemas/Products"
+        "500":
+          description: Error en el servidor
+  put:
+    summary: Actualizar un porducto a partir de su id
+    tags:
+      - Products
+    security:
+        - userAuth: ['admin']
+    parameters:
+      - name: pid 
+        in: path 
+        required: true 
+        description: id del producto que desea actualizar 
+        schema:
+          $type: string
+    requestBody:
+      required: true 
+      content: 
+        application/json: 
+          schema:
+            $ref: "#components/requestBodies/NewProduct"
+    responses:
+        "200":
+          description: Se actualizo el producto solicitado
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#components/schemas/Products"
+        "500":
+          description: Error en el servidor
+  delete:
+      summary: Eliminar un producto 
+      tags:
+        - Products
+      security:
+        - userAuth: ['admin', 'premium']
+      description: Elimina un producto existente desde su id.
+      parameters:
+        - name: pid 
+          in: path 
+          required: true 
+          description: id del producto que desea actualizar 
+          schema:
+          $type: string
+      responses:
+        "200":
+          description: Producto eliminado exitosamente
+        "500":
+          description: Error en el servidor
+
+
+components:
+  schemas:
+    Products:
+      type: object
+      properties:
+        _id:
+          type: ObjectId
+          description: Id generado por la base de datos
+        title:
+          type: string
+          description: Nombre del productos
+        description:
+          type: string
+          description: Descripción del producto
+        price:
+          type: number
+          description: precio del producto
+        code:
+          type: string
+          description: codigo del producto
+        status:
+          type: boolean
+          default: true
+        thumbnail:
+          type: string
+          description: imagen del producto
+        stock:
+          type: number
+          description: cantidad de producto
+        category:
+          type: string
+          description: Pulsera - Aros - Anillo
+        owner:
+          type: ObjectId
+          description: Id del usuario que creo el producto
+      example:
+        _id: ObjectId("kasjflar19464fd")
+        title: "Pulsera luna"
+        description: "pulsera de plata 925"
+        price: 5000
+        code: "Pulsera-05"
+        status: true
+        thumbnail: "www.images/pulsera-luna"
+        stock: 5
+        category: "Pulsera"
+        owner: "as4f5dswetrgssd3245"
+  requestBodies:
+    NewProduct:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Nombre del productos
+        description:
+          type: string
+          description: Descripción del producto
+        price:
+          type: number
+          description: precio del producto
+        code:
+          type: string
+          description: codigo del producto
+        status:
+          type: boolean
+          default: true
+        thumbnail:
+          type: string
+          description: imagen del producto
+        stock:
+          type: number
+          description: cantidad de producto
+        category:
+          type: string
+          description: Pulsera - Aros - Anillo
+      example:
+        title: "Pulsera estrella"
+        description: "pulsera de plata 925"
+        price: 7000
+        code: "Pulsera-06"
+        status: true
+        thumbnail: "www.images/pulsera-estrella"
+        stock: 5
+        category: "Pulsera"
+    
+
+
+securitySchemes:
+  userAuth:
+    type: http
+    scheme: bearer
+        

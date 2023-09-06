@@ -1,0 +1,31 @@
+<h1>PRODUCTOS</h1>
+<br/>
+
+<p>Bienvenido {{email}}</p>
+
+<hr />
+<div>
+    <button onclick="newCart()" id="newCart">Crear tu carrito de compras</button>
+</div>
+<div>
+    Id del carrito:
+    <span id="cartDiv"></span>
+    <a href="http://localhost:8080/api/carts/{{cartId}}" id="cartLink">Ver carrito</a>
+</div>
+<br />
+
+<ul>
+    {{#each products}}
+    <li>Product: {{this.title}} </li>
+    <p>description: {{this.description}} </p>
+    <p>price: {{this.price}} </p>
+    <hr>
+    <button onclick="addToCart('{{this._id}}')">Agregar al carrito</button>
+   
+    <hr>
+    {{/each}}
+</ul>
+
+<a href="/api/sessions/logout">Cerrar sesion</a>
+
+  <script src="/js/products.js" ></script>
