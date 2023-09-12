@@ -85,15 +85,15 @@ export class CartsMongo{
     
     async purchase(cid) {
        try {
-        const productsApproved = [];
-        const productsRejected = [];
-        let fullPurchase = 0;
+            const productsApproved = [];
+            const productsRejected = [];
+            let fullPurchase = 0;
   
-        // Verificar que el carrito exista 
-        const cart = await this.getCartById(cid);
-        //console.log("cart", cart);
+            // Verificar que el carrito exista 
+            const cart = await this.getCartById(cid);
+            //console.log("cart", cart);
             if (!cart) {
-            throw new Error('El carrito no existe');
+                throw new Error('El carrito no existe');
             } 
             if (!cart.products.length) {
                 throw new Error('El carrito no tiene productos');
@@ -121,66 +121,64 @@ export class CartsMongo{
                     };
                 };
 
-                    console.log("Productos aprobados: ", productsApproved);
-                    console.log ("Productos rechazados: ", productsRejected);
+                console.log("Productos aprobados: ", productsApproved);
+                console.log ("Productos rechazados: ", productsRejected);
 
-                    if (productsApproved.length > 0 && productsRejected.length === 0) {
-                        //const user = await UserModel.findOne(req.user.email);
-                        const ticketData = {
-                            purchase_datetime: Date(),
-                            amount: fullPurchase,
-                            //purchaser: user.email
-                        };
+                if (productsApproved.length > 0 && productsRejected.length === 0) {
+                    //const user = await UserModel.findOne(req.user.email);
+                    const ticketData = {
+                    purchase_datetime: Date(),
+                    amount: fullPurchase,
+                    //purchaser: user.email
+                    };
                 
-                        const ticketCreated = await ticketsModel.create(ticketData);
+                    const ticketCreated = await ticketsModel.create(ticketData);
                         
-                        // Envío del correo electrónico con el ticket como adjunto
-       
-
-        const transporter = nodemailer.createTransport({
-        service: 'Gmail',
-        auth: {
-            user: config.gmail.marketingEmail,
-            pass: config.gmail.password,
-        },
-        tls:{
-            rejectUnauthorized:false
-        }
-        });
-
-        const mailOptions = {
-          from: 'bgutierrez.mil@gmail.com',
-          to:  'bgutierrez.mil@gmail.com', // Usar el correo electrónico del cliente
-          subject: 'Ticket de compra',
-          text: 'Adjunto encontrarás tu ticket de compra.',
-          attachments: [
-            {
-              filename: 'ticket.pdf',
-              content: 'Contenido del ticket aquí',
-            },
-          ],
-        };
-
-        transporter.sendMail(mailOptions, (error, info) => {
-          if (error) {
-            console.error('Error al enviar el correo electrónico: ', error.message);
-          } else {
-            console.log('Correo electrónico enviado con éxito: ', info.response);
-          }
-        });
-
-                        return { ticket: ticketCreated, total: fullPurchase };
-                    } else if (productsRejected.length > 0) {
-                        // Si hay productos rechazados
-                        throw new Error('Hay productos que no cuentan con el stock suficiente para generar tu compra');
-                    } else {
-                        // Si no hay productos rechazados y no hay productos aprobados
-                        throw new Error('No hay productos aprobados para generar la compra');
+                    // Envío del correo electrónico con el ticket como adjunto
+                    const transporter = nodemailer.createTransport({
+                    service: 'Gmail',
+                    auth: {
+                        user: config.gmail.marketingEmail,
+                        pass: config.gmail.password,
+                    },
+                    tls:{
+                        rejectUnauthorized:false
                     }
+                    });
+
+                    const mailOptions = {
+                    from: 'bgutierrez.mil@gmail.com',
+                    to:  usuario.email, // Usar el correo electrónico del cliente
+                    subject: 'Ticket de compra',
+                    text: 'Adjunto encontrarás tu ticket de compra.',
+                    attachments: [
+                        {
+                        filename: 'ticket.pdf',
+                        content: 'Contenido del ticket aquí',
+                        },
+                    ],
+                    };
+
+                    transporter.sendMail(mailOptions, (error, info) => {
+                    if (error) {
+                        console.error('Error al enviar el correo electrónico: ', error.message);
+                    } else {
+                    console.log('Correo electrónico enviado con éxito: ', info.response);
+                    }
+                    });
+
+                    return { ticket: ticketCreated, total: fullPurchase };
+                } else if (productsRejected.length > 0) {
+                    // Si hay productos rechazados
+                    throw new Error('Hay productos que no cuentan con el stock suficiente para generar tu compra');
+                } else {
+                    // Si no hay productos rechazados y no hay productos aprobados
+                    throw new Error('No hay productos aprobados para generar la compra');
+                }
             }
-       }catch (error) {
+        }catch (error) {
          throw new Error(`Error al procesar la compra ${error.message}`);
-       }
+        }
     };
     
     async deleteCart(cid){

@@ -67,5 +67,32 @@ export class UserController {
         } catch (error) {
             res.send(error.message);
         }
-    }
+    };
+
+    static delete = async(req,res)=>{
+        try {
+            await UsersService.delete();
+
+            res.json({ status: 'success', message: 'Usuarios inactivos eliminados y correos electrónicos enviados.' });
+        } catch (error) {
+            console.error('Error al eliminar usuarios inactivos', error);
+            res.json({ status: 'error', message: 'Error al eliminar usuarios inactivos' });
+        }
+    };
+
+    static deleteUser = async (req, res) =>{
+        try {
+            const {userId} = req.params;
+
+            // Verificar si el ID del usuario es válido
+            if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+                return res.status(400).json({ status: 'error', message: 'ID de usuario no existe o fue ingresado de forma incorrecta.' });
+            }
+
+            const userDelete = await UsersService.deleteUser(userId);
+            res.json({status:"success",data:userDelete});
+        } catch (error) {
+            res.json({status:"error", message:error.message});
+        }
+    };
 }

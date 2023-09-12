@@ -47,10 +47,35 @@ export class ProductsController{
         try {
             const productId = req.params.id;
             const product = await ProductsService.getProductById(productId);
-            //validamos si el usuario que esta barrando el producto es premiun
+            //validamos si el usuario que esta borrando el producto es premiun
             if(req.user.role === "premium" && product.owner == req.user._id || req.user.role === "admin"){
                 const result = await ProductsService.deleteProduct(productId);
+            
+                // Envía el correo electrónico si el usuario es premium
+                if (req.user.role === "premium") {
+                    // Configura el transporte de correo (debes configurar esto según tu proveedor de correo)
+                    const transporter = nodemailer.createTransport({
+                        service: 'tu_servicio_de_correo',
+                        auth: {
+                            user: 'tu_correo_electronico',
+                            pass: 'tu_contraseña',
+                        },
+                    });
+
+                    // Contenido del correo electrónico
+                    const mailOptions = {
+                        from: 'tu_correo_electronico',
+                        to: req.user.email,
+                        subject: 'Producto Eliminado',
+                        text: `Tu producto "${product}" ha sido eliminado`,
+                    };
+
+                    // Envía el correo electrónico
+                    await transporter.sendMail(mailOptions);
+                }
+    
                 res.json ({status:"success", message:result});
+                
             }else{
                 res.json ({status:"error", message:"no tienes permisos"}); 
             }
@@ -58,4 +83,7 @@ export class ProductsController{
             res.json({status:"error", message:error.message});
         }
     };
+
+    
+    
 }
