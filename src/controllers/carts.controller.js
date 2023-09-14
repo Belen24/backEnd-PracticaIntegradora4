@@ -4,6 +4,8 @@ import { EError } from "../enums/EError.js";
 import { generateCartErrorParams } from "../services/error/cartErrorParams.service.js";
 import mongoose from "mongoose";
 import { errorHandler} from "../middlewares/errorHandler.js"
+import nodemailer from "nodemailer";
+import {config} from "../config/config.js";
 //import { ProductsService } from "../services/products.service.js";
 
 export class CartsController{
@@ -84,6 +86,40 @@ export class CartsController{
         try {
             const {cid} = req.params;
             const cartPurchase = await CartsService.purchase(cid);
+            //console.log(cartPurchase);
+
+            const usuario = req.user; 
+            if (!usuario) {
+                throw new Error('Usuario no definido'); 
+            }
+            
+            // Envío del correo electrónico con el ticket (texto)
+            const transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+                user: config.gmail.marketingEmail,
+                pass: config.gmail.password,
+            },
+            tls:{
+                rejectUnauthorized:false
+            }
+            });
+
+            const mailOptions = {
+            from: 'bgutierrez.mil@gmail.com',
+            to: usuario.email , 
+            subject: 'Ticket de compra',
+            text: `Detalles del ticket de compra:\n\nCodigo de tu compra: ${cartPurchase.ticket.code}\nFecha de compra: ${cartPurchase.ticket.purchase_datetime}\nTotal: $ ${cartPurchase.ticket.amount}`,
+            };
+
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.error('Error al enviar el correo electrónico: ', error.message);
+                } else {
+                    console.log('Correo electrónico enviado con éxito: ', info.response);
+                }
+            });
+
             res.json({status:"success",data:cartPurchase});
         } catch (error) {
             res.json({status:"error", message:error.message});

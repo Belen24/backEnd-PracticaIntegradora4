@@ -1,11 +1,6 @@
 import { cartsModel } from "../models/carts.model.js";
 import { productsModel } from "../models/products.model.js";
 import { ticketsModel } from "../models/tickets.model.js";
-import nodemailer from "nodemailer";
-import {config} from "../../config/config.js"
-
-
-
 
 export class CartsMongo{
     constructor(){
@@ -60,9 +55,7 @@ export class CartsMongo{
         
         try {
             const cart = await this.get(cid);
-            //console.log("cart", cart);
-            //console.log(cart.products[0]);
-            //console.log(cart.products.map ((products) => products));
+        
             const existingProductIndex = cart.products.findIndex((product) => product.productId._id === pid);
             console.log(existingProductIndex);
     
@@ -84,7 +77,7 @@ export class CartsMongo{
 
     
     async purchase(cid) {
-       try {
+        try {
             const productsApproved = [];
             const productsRejected = [];
             let fullPurchase = 0;
@@ -125,48 +118,15 @@ export class CartsMongo{
                 console.log ("Productos rechazados: ", productsRejected);
 
                 if (productsApproved.length > 0 && productsRejected.length === 0) {
-                    //const user = await UserModel.findOne(req.user.email);
+                    
                     const ticketData = {
-                    purchase_datetime: Date(),
-                    amount: fullPurchase,
-                    //purchaser: user.email
+                        purchase_datetime: Date(),
+                        amount: fullPurchase,
+                        //purchaser: user.email
                     };
                 
                     const ticketCreated = await ticketsModel.create(ticketData);
                         
-                    // Envío del correo electrónico con el ticket como adjunto
-                    const transporter = nodemailer.createTransport({
-                    service: 'Gmail',
-                    auth: {
-                        user: config.gmail.marketingEmail,
-                        pass: config.gmail.password,
-                    },
-                    tls:{
-                        rejectUnauthorized:false
-                    }
-                    });
-
-                    const mailOptions = {
-                    from: 'bgutierrez.mil@gmail.com',
-                    to:  usuario.email, // Usar el correo electrónico del cliente
-                    subject: 'Ticket de compra',
-                    text: 'Adjunto encontrarás tu ticket de compra.',
-                    attachments: [
-                        {
-                        filename: 'ticket.pdf',
-                        content: 'Contenido del ticket aquí',
-                        },
-                    ],
-                    };
-
-                    transporter.sendMail(mailOptions, (error, info) => {
-                    if (error) {
-                        console.error('Error al enviar el correo electrónico: ', error.message);
-                    } else {
-                    console.log('Correo electrónico enviado con éxito: ', info.response);
-                    }
-                    });
-
                     return { ticket: ticketCreated, total: fullPurchase };
                 } else if (productsRejected.length > 0) {
                     // Si hay productos rechazados
@@ -177,12 +137,17 @@ export class CartsMongo{
                 }
             }
         }catch (error) {
-         throw new Error(`Error al procesar la compra ${error.message}`);
+            throw new Error(`Error al procesar la compra ${error.message}`);
         }
     };
     
     async deleteCart(cid){
         try {
+
+            const cart = await this.model.findById(id);
+            if (!cart) {
+                throw new Error('El ID de carrito no existe'); 
+            }
             await this.model.findByIdAndDelete(cid);
             return {message: "Carrito eliminado"};
         } catch (error) {
@@ -203,19 +168,19 @@ export class CartsMongo{
 
             const productIndex = cart.products.findIndex(
                 (product) => product._id.toString() === pid.toString()
-              );
-              console.log(productIndex)
-              if (productIndex !== -1) {
+            );
+            console.log(productIndex)
+            if (productIndex !== -1) {
                 throw new Error("El producto no existe en el carrito");
-              }
+            }
           
-              cart.products.splice(productIndex, 1);
-              await cart.save();
+            cart.products.splice(productIndex, 1);
+            await cart.save();
           
-              return { message: "Producto eliminado del carrito" };
+            return { message: "Producto eliminado del carrito" };
 
         } catch (error) {
-            throw new Error(`Error al eliminar el carrito ${error.message}`);
+            throw new Error(`Error al eliminar el producto del carrito ${error.message}`);
         }
     
     };

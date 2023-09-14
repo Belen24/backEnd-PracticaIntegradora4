@@ -50,6 +50,12 @@ export class ProductsMongo{
 
     async deleteProduct(id){
         try {
+          
+            const product = await this.model.findById(id);
+            if (!product) {
+                throw new Error('El producto no existe'); 
+            }
+
             await this.model.findByIdAndDelete(id);
             return "Producto eliminado";
         } catch (error) {

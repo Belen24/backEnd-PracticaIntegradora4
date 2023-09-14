@@ -1,6 +1,4 @@
 import {UserModel} from "../models/users.model.js";
-import nodemailer from "nodemailer";
-import {config} from "../../config/config.js"
 
 export class UserMongo{
     constructor(){
@@ -115,5 +113,4 @@ export class UserMongo{
         }
         
     };
-    
 }
